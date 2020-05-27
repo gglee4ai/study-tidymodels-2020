@@ -25,6 +25,7 @@ library(tune)
 library(doParallel)
 all_cores <- parallel::detectCores(logical = FALSE)
 cl <- makeForkCluster(all_cores)
+#cl <- makePSOCKcluster(all_cores)
 registerDoParallel(cl)
 foreach::getDoParWorkers()
 
@@ -268,6 +269,9 @@ wkfl_tidym_final$.workflow[[1]] %>%
 vip(pull_workflow_fit(wkfl_tidym_final$.workflow[[1]]))$data
 ```
 
+```{r}
+stopCluster(cl)
+```
 
 
 
