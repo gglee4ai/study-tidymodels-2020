@@ -4,13 +4,13 @@ output: html_notebook
 ---
 
 
-# 1. Build a model
-
 ```{r}
 #install.packages("tidymodels")
 library(tidymodels)
 library(readr)
+library(broom.mixed)
 ```
+
 
 ```{r}
 urchins <-
@@ -20,25 +20,36 @@ urchins <-
 urchins
 ```
 
-```{r}
-urchins %>%
-  ggplot(aes(initial_volume, width, col = food_regime)) +
-  geom_point() +
-  geom_smooth(method = lm, se = FALSE) +
-  scale_colour_viridis_d(option = "plasma", end = .7)
-```
 
 ```{r}
-lm_mod <- linear_reg() %>%
+urchins %>%
+  ggplot(aes(initial_volume, width, group = food_regime, color = food_regime)) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE) +
+  scale_color_viridis_d(option = "plasma", end = .7)
+```
+
+
+```{r}
+lm_mod <- 
+  linear_reg() %>%
   set_engine("lm")
 lm_mod
 ```
 
+
 ```{r}
-lm_fit <- lm_mod %>%
+lm_fit <- 
+  lm_mod %>%
   fit(width ~ initial_volume * food_regime, data = urchins)
 lm_fit
 ```
+
+
+```{r}
+summary(lm_fit$fit)
+```
+
 
 ```{r}
 tidy(lm_fit)
@@ -51,10 +62,12 @@ new_points <- expand.grid(
 new_points
 ```
 
+
 ```{r}
 mean_pred <- predict(lm_fit, new_data = new_points)
 mean_pred
 ```
+
 
 ```{r}
 conf_int_pred <- predict(lm_fit,
@@ -63,8 +76,10 @@ conf_int_pred <- predict(lm_fit,
 conf_int_pred
 ```
 
+
 ```{r}
-plot_data <- new_points %>%
+plot_data <- 
+  new_points %>%
   bind_cols(mean_pred) %>%
   bind_cols(conf_int_pred)
 
@@ -74,6 +89,7 @@ plot_data %>%
   geom_errorbar(aes(ymin = .pred_lower, ymax = .pred_upper), width = .2) +
   labs(y = "urchin size")
 ```
+
 
 ```{r}
 prior_dist <- rstanarm::student_t(df = 1)
@@ -93,9 +109,11 @@ bayes_fit <-
 print(bayes_fit, digits = 5)
 ```
 
+
 ```{r}
 tidy(bayes_fit, intervals = TRUE)
 ```
+
 
 ```{r}
 new_points %>%
@@ -106,3 +124,30 @@ new_points %>%
   geom_errorbar(aes(ymin = .pred_lower, ymax = .pred_upper), width = .2) +
   labs(title = "Bayesian model with t(1) prior distribution")
 ```
+
+
+
+```{r}
+urchins %>% 
+  group_by(food_regime) %>% 
+  summarize(med_vol = median(initial_volume), .groups = "drop_last")
+```
+
+
+```{r}
+bayes_mod %>% 
+  fit(width ~ initial_volume * food_regime, data = urchins)
+```
+
+
+```{r}
+urchins %>% 
+  ggplot(aes(initial_volume, width)) +
+  geom_jitter() +
+  geom_smooth(method = lm, se = FALSE) +
+  labs(x = "Volue", y = "Width")
+```
+
+
+
+

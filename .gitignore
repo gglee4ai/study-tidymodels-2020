@@ -1,13 +1,5 @@
 # MY setting
-*.html
-*.pdf
-*.png
-*.jpg
-*.swp
-~$*
-ref
-Thumbs.db
-
+.DS_Store
 
 # History files
 .Rhistory
