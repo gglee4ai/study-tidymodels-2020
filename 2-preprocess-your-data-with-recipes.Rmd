@@ -79,10 +79,9 @@ flight_data %>%
   mutate(numeric_date = as.numeric(date))
 ```
 
-
 ```{r}
-test_data %>%
-  distinct(dest) %>%
+test_data %>% 
+  distinct(dest) %>% 
   anti_join(train_data)
 ```
 
@@ -97,6 +96,12 @@ flights_rec <-
   step_dummy(all_nominal(), -all_outcomes()) %>%
   step_zv(all_predictors())
 summary(flights_rec)
+```
+
+```{r}
+flights_rec %>% 
+  prep(training = train_data) %>% 
+  juice()
 ```
 
 
@@ -119,7 +124,7 @@ flights_wflow
 ```{r}
 flights_fit <-
   flights_wflow %>%
-  fit(data = train_data)
+  fit(data = train_data) 
 ```
 
 
