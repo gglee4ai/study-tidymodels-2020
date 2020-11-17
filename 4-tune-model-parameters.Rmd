@@ -1,20 +1,22 @@
 ---
 title: "4. Tune model parameters"
 output: html_notebook
+date: 2020-11-17
 ---
 
 
-# 4. Tune model parameters
-
 ```{r}
+library(tidymodels)
 library(modeldata)
 library(vip)
 ```
+
 
 ```{r}
 data(cells, package = "modeldata")
 cells
 ```
+
 
 ```{r}
 set.seed(123)
@@ -23,10 +25,12 @@ cell_train <- training(cell_split)
 cell_test <- testing(cell_split)
 ```
 
+
 ```{r}
 cell_train
 cell_test
 ```
+
 
 ```{r}
 tune_spec <-
@@ -39,6 +43,7 @@ tune_spec <-
 tune_spec
 ```
 
+
 ```{r}
 tree_grid <- grid_regular(cost_complexity(),
                           tree_depth(),
@@ -46,10 +51,12 @@ tree_grid <- grid_regular(cost_complexity(),
 tree_grid
 ```
 
+
 ```{r}
 tree_grid %>%
   count(tree_depth)
 ```
+
 
 ```{r}
 set.seed(234)
@@ -57,9 +64,11 @@ cell_folds <- vfold_cv(cell_train)
 cell_folds
 ```
 
+
 ```{r}
 cell_folds$splits[1]
 ```
+
 
 ```{r}
 set.seed(345)
@@ -76,10 +85,12 @@ tree_res <-
 tree_res
 ```
 
+
 ```{r}
 tree_res %>%
   collect_metrics()
 ```
+
 
 ```{r}
 tree_res %>%
@@ -93,16 +104,19 @@ tree_res %>%
   scale_color_viridis_d(option = "plasma", begin = .9, end = 0)
 ```
 
+
 ```{r}
 tree_res %>%
   show_best("roc_auc")
 ```
+
 
 ```{r}
 best_tree <- tree_res %>%
   select_best("roc_auc")
 best_tree
 ```
+
 
 ```{r}
 final_wf <-
@@ -111,6 +125,7 @@ final_wf <-
 final_wf
 ```
 
+
 ```{r}
 final_tree <-
   final_wf %>%
@@ -118,12 +133,14 @@ final_tree <-
 final_tree
 ```
 
+
 ```{r}
 library(vip)
 final_tree %>%
   pull_workflow_fit() %>%
   vip()
 ```
+
 
 ```{r}
 final_fit <-
@@ -134,6 +151,7 @@ final_fit %>%
   collect_metrics()
 ```
 
+
 ```{r}
 final_fit %>%
   collect_predictions() %>%
@@ -141,6 +159,8 @@ final_fit %>%
   autoplot()
 ```
 
+
 ```{r}
 args(decision_tree)
 ```
+
