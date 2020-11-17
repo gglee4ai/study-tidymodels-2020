@@ -1,24 +1,28 @@
 ---
 title: "3. Evaluate your model with resampling"
 output: html_notebook
+date: 2020-11-17
 ---
 
-# 3. Evaluate your model with resampling
 
 ```{r}
+library(tidymodels)
 library(modeldata)
 ```
+
 
 ```{r}
 data(cells, package = "modeldata")
 cells
 ```
 
+
 ```{r}
 cells %>%
   count(class) %>%
   mutate(prop = n / sum(n))
 ```
+
 
 ```{r}
 set.seed(123)
@@ -27,10 +31,12 @@ cell_train <- training(cell_split)
 cell_test <- testing(cell_split)
 ```
 
+
 ```{r}
 nrow(cell_train)
 nrow(cell_train) / nrow(cells)
 ```
+
 
 ```{r}
 cell_train %>%
@@ -42,6 +48,7 @@ cell_test %>%
   mutate(prop = n / sum(n))
 ```
 
+
 ```{r}
 rf_mod <-
   rand_forest(trees = 1000) %>%
@@ -49,12 +56,15 @@ rf_mod <-
   set_mode("classification")
 ```
 
+
 ```{r}
 set.seed(234)
 rf_fit <-
   rf_mod %>%
   fit(class ~ ., data = cell_train)
+rf_fit
 ```
+
 
 ```{r}
 rf_training_pred <-
@@ -64,6 +74,7 @@ rf_training_pred <-
 rf_training_pred
 ```
 
+
 ```{r}
 rf_training_pred %>% 
   roc_auc(truth = class, .pred_PS)
@@ -71,6 +82,7 @@ rf_training_pred %>%
 rf_training_pred %>%
   accuracy(truth = class, .pred_class)
 ```
+
 
 ```{r}
 rf_testing_pred <-
@@ -80,6 +92,7 @@ rf_testing_pred <-
 rf_testing_pred
 ```
 
+
 ```{r}
 rf_testing_pred %>% 
   roc_auc(truth = class, .pred_PS)
@@ -88,11 +101,13 @@ rf_testing_pred %>%
   accuracy(truth = class, .pred_class)
 ```
 
+
 ```{r}
 set.seed(345)
 folds <- vfold_cv(cell_train, v = 10)
 folds
 ```
+
 
 ```{r}
 rf_wf <-
@@ -106,13 +121,17 @@ rf_fit_rs <-
   fit_resamples(folds)
 ```
 
+
 ```{r}
 collect_metrics(rf_fit_rs)
 ```
 
+
 ```{r}
 rf_testing_pred %>%                   # test set predictions
   roc_auc(truth = class, .pred_PS)
+
 rf_testing_pred %>%                   # test set predictions
   accuracy(truth = class, .pred_class)
 ```
+
