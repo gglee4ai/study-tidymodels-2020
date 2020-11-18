@@ -5,6 +5,15 @@ date: 2020-11-17
 ---
 
 
+
+```{r}
+options(
+  paged.print = FALSE,
+  tibble.max_extra_cols = 0
+)
+```
+
+
 ```{r}
 library(tidymodels)
 library(modeldata)
