@@ -1,0 +1,20 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r, paged.print=FALSE}
+library(tidyverse)
+d <- nycflights13::flights
+ds <- 
+  bind_rows(d, d, d, d, d) %>% 
+  mutate(no = rep(1:5, each = nrow(d))) %>% 
+  relocate(no)
+
+grouped <-
+  ds %>% 
+  group_by(no) %>% 
+  nest()
+
+grouped  ## <- it will make Rstudio slow and generate a huge html file, it was not affected by "max.print"
+```
