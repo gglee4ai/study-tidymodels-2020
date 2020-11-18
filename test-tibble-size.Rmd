@@ -1,0 +1,52 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+tibble의 사이즈에 따라서 html 용량이 변화하는 것을 확인
+
+
+```{r}
+options(
+  max.print = 100,
+  paged.print = FALSE
+)
+```
+
+
+```{r}
+knitr::opts_chunk$set(paged.print=FALSE)
+```
+
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+```
+
+
+```{r}
+hotels <- read_csv('https://tidymodels.org/start/case-study/hotels.csv')
+```
+
+
+```{r}
+#head(hotels)  # small html generated
+hotels  # large html generated
+```
+
+
+
+```{r}
+splits <- initial_split(hotels, strata = children)
+hotel_other <- training(splits)
+hotel_test <- testing(splits)
+val_set <- validation_split(hotel_other,
+                            strata = children,
+                            prop = 0.80)
+```
+
+
+```{r, paged.print = FALSE}
+val_set  # very large html which can't be reduced by head()
+```
