@@ -1,26 +1,30 @@
 ---
 title: "5 A predictive modeling case study"
 output: html_notebook
+date: 2020-11-18
 ---
 
 
+```{r}
+options(
+  max.print = 100,
+  paged.print = FALSE
+)
+```
 
-# 5. A predictive modeling case study
 
 ```{r}
 library(tidymodels)
 library(readr)
 library(vip)
+library(doParallel)
+all_cores <- parallel::detectCores(logical = FALSE)
+cl <- makeForkCluster(all_cores)
+#cl <- makePSOCKcluster(all_cores)
+registerDoParallel(cl)
+#stopCluster(cl)
 ```
 
-```{r}
-# library(doParallel)
-# all_cores <- parallel::detectCores(logical = TRUE)
-# cl <- makeForkCluster(all_cores - 2) # all_cores or 10 cores
-# #cl <- makePSOCKcluster(all_cores)  # all_cores or 10
-# registerDoParallel(cl)
-# # stopCluster(cl)
-```
 
 ```{r}
 hotels <-
@@ -29,15 +33,18 @@ hotels <-
 hotels
 ```
 
+
 ```{r}
 glimpse(hotels)
 ```
+
 
 ```{r}
 hotels %>%
   count(children) %>%
   mutate(prop = n / sum(n))
 ```
+
 
 ```{r}
 set.seed(123)
@@ -46,17 +53,20 @@ hotel_other <- training(splits)
 hotel_test <- testing(splits)
 ```
 
+
 ```{r}
 hotel_other %>%
   count(children) %>%
   mutate(prop = n/sum(n))
 ```
 
+
 ```{r}
 hotel_test %>%
   count(children) %>%
   mutate(prop = n/sum(n))
 ```
+
 
 ```{r}
 set.seed(234)
@@ -65,6 +75,7 @@ val_set <- validation_split(hotel_other,
                             prop = 0.80)
 val_set
 ```
+
 
 ```{r}
 lr_mod <-
@@ -87,6 +98,7 @@ lr_recipe <-
 lr_recipe
 ```
 
+
 ```{r}
 lr_workflow <- 
   workflow() %>% 
@@ -94,10 +106,11 @@ lr_workflow <-
   add_recipe(lr_recipe)
 ```
 
+
 ```{r}
 lr_reg_grid <- tibble(penalty = 10^seq(-4, -1, length.out = 30))
-lr_reg_grid %>% top_n(-5)
-lr_reg_grid %>% top_n(5)
+lr_reg_grid %>% slice_head(n = 5)
+lr_reg_grid %>% slice_tail(n = 5)
 ```
 
 
@@ -108,6 +121,10 @@ lr_res <-
             grid = lr_reg_grid,
             control = control_grid(save_pred = TRUE),
             metrics = metric_set(roc_auc))
+```
+
+
+```{r}
 lr_res
 ```
 
@@ -148,6 +165,7 @@ lr_best
 
 ```
 
+
 ```{r}
 lr_auc <- 
   lr_res %>% 
@@ -156,13 +174,14 @@ lr_auc <-
   mutate(model = "Logistic Regression")
 
 autoplot(lr_auc)
-
 ```
+
 
 ```{r}
-cores <- parallel::detectCores()
+cores <- parallel::detectCores(logical = FALSE)
 cores
 ```
+
 
 ```{r}
 rf_mod <- 
@@ -171,6 +190,7 @@ rf_mod <-
   set_mode("classification")
 rf_mod
 ```
+
 
 ```{r}
 rf_recipe <-
@@ -181,6 +201,7 @@ rf_recipe <-
 rf_recipe
 ```
 
+
 ```{r}
 rf_workflow <-
   workflow() %>%
@@ -188,6 +209,7 @@ rf_workflow <-
   add_recipe(rf_recipe)
 rf_workflow
 ```
+
 
 ```{r}
 rf_mod %>%
@@ -203,17 +225,19 @@ rf_res <-
             grid = 25,
             control = control_grid(save_pred = TRUE),
             metrics = metric_set(roc_auc))
-#> i Creating pre-processing data to finalize unknown parameter: mtry
 ```
+
 
 ```{r}
 rf_res %>%
   show_best(metric = "roc_auc")
 ```
 
+
 ```{r}
 autoplot(rf_res)
 ```
+
 
 ```{r}
 rf_best <-
@@ -222,11 +246,11 @@ rf_best <-
 rf_best
 ```
 
-```{r}
+
+```{r, include=FALSE}
 rf_res %>%
   collect_predictions()
 ```
-
 
 
 ```{r}
@@ -247,6 +271,7 @@ bind_rows(rf_auc, lr_auc) %>%
   scale_color_viridis_d(option = "plasma", end = .6)
 ```
 
+
 ```{r}
 last_rf_mod <-
   rand_forest(mtry = 8, min_n = 7, trees = 1000) %>%
@@ -263,14 +288,17 @@ last_rf_fit <-
   last_fit(splits)
 ```
 
+
 ```{r}
 last_rf_fit
 ```
+
 
 ```{r}
 last_rf_fit %>%
   collect_metrics()
 ```
+
 
 ```{r}
 last_rf_fit %>%
@@ -279,9 +307,16 @@ last_rf_fit %>%
   vip(num_features = 20)
 ```
 
+
 ```{r}
 last_rf_fit %>%
   collect_predictions() %>%
   roc_curve(children, .pred_children) %>%
   autoplot()
 ```
+
+
+```{r}
+stopCluster(cl)
+```
+
