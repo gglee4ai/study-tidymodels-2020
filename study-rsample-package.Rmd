@@ -1,0 +1,337 @@
+---
+title: "rsample"
+output: html_notebook
+---
+
+
+```{r setup}
+options(max.print = 100, paged.print = FALSE)
+```
+
+
+## Overview
+
+```{r}
+library(rsample)
+library(mlbench)
+library(lobstr)
+library(tidymodels)
+```
+
+
+```{r}
+data("LetterRecognition")
+obj_size(LetterRecognition)
+```
+
+
+```{r}
+object.size(LetterRecognition)
+```
+
+
+```{r}
+set.seed(35222)
+boots <- bootstraps(LetterRecognition, times = 50)
+obj_size(boots)
+```
+
+
+```{r}
+object.size(boots)
+```
+
+
+```{r}
+obj_size(boots)/nrow(boots)
+```
+
+
+```{r}
+as.numeric(obj_size(boots)/obj_size(LetterRecognition))
+```
+
+
+```{r}
+boots
+```
+
+
+```{r}
+boots$splits[[1]]
+```
+
+
+```{r}
+str(boots$splits[[1]])
+```
+
+
+```{r}
+dim(analysis(boots$splits[[1]]))
+```
+
+
+```{r}
+dim(assessment(boots$splits[[1]]))
+```
+
+
+```{r}
+dim(assessment(boots$splits[[2]]))
+```
+
+
+## Basics
+
+```{r}
+set.seed(8584)
+bt_resamples <- bootstraps(mtcars, times = 3)
+bt_resamples
+```
+
+
+```{r}
+class(bt_resamples)
+```
+
+
+```{r}
+first_resample <- bt_resamples$splits[[1]]
+first_resample
+```
+
+
+```{r}
+as.data.frame(first_resample)
+```
+
+
+```{r}
+as.data.frame(first_resample, data = "assessment")
+```
+
+
+```{r}
+analysis(first_resample)
+```
+
+
+```{r}
+assessment(first_resample)
+```
+
+
+## Working with rsets
+
+### Intdocution
+
+```{r}
+data("attrition", package = "modeldata")
+names(attrition)
+table(attrition$Attrition)
+```
+
+
+```{r}
+glm(Attrition ~ JobSatisfaction + Gender + MonthlyIncome, data = attrition, 
+    family = binomial)
+```
+
+
+```{r}
+mod_form <- as.formula(Attrition ~ JobSatisfaction + Gender + MonthlyIncome)
+```
+
+
+```{r}
+set.seed(4622)
+rs_obj <- vfold_cv(attrition, v = 10, repeats = 10)
+rs_obj
+```
+
+
+```{r}
+holdout_results <- function(splits, ...) {
+  mod <- glm(..., data = analysis(splits), family = binomial)
+  holdout <- assessment(splits)
+  res <- broom::augment(mod, newdata = holdout)
+  lvls <- levels(holdout$Attrition)
+  predictions <- factor(ifelse(res$.fitted >0, lvls[2], lvls[1]), levels = lvls)
+  res$correct <- predictions == holdout$Attrition
+  res
+}
+```
+
+
+```{r}
+example <- holdout_results(rs_obj$splits[[1]], mod_form)
+dim(example)
+dim(assessment(rs_obj$splits[[1]]))
+example[1:10, setdiff(names(example), names(attrition))]
+```
+
+
+```{r}
+holdout_results <- function(splits, ...) {
+  mod <- glm(..., data = analysis(splits), family = binomial)
+  holdout <- assessment(splits)
+  res <- broom::augment(mod, newdata = holdout)
+  lvls <- levels(holdout$Attrition)
+  predictions <- factor(ifelse(res$.fitted >0, lvls[2], lvls[1]), levels = lvls)
+  res$correct <- predictions == holdout$Attrition
+  res
+}
+
+example <- holdout_results(rs_obj$splits[[1]], mod_form)
+dim(example)
+dim(assessment(rs_obj$splits[[1]]))
+example[1:10, setdiff(names(example), names(attrition))]
+```
+
+
+```{r, paged.print = TRUE}
+splits <- rs_obj$splits[[1]]
+mod <- glm(mod_form, data = analysis(splits), family = binomial)
+holdout <- assessment(splits)
+holdout
+```
+
+
+```{r, paged.print = TRUE}
+res <- broom::augment(mod, newdata = holdout)
+res
+```
+
+
+```{r}
+lvls <- levels(holdout$Attrition)
+predictions <- factor(ifelse(res$.fitted >0, lvls[2], lvls[1]), levels = lvls)
+predictions
+```
+
+
+```{r}
+res$correct <- predictions == holdout$Attrition
+res[, setdiff(names(example), names(attrition))]
+```
+
+
+```{r}
+library(purrr)
+rs_obj$results <- map(rs_obj$splits, holdout_results, mod_form)
+rs_obj
+```
+
+
+```{r}
+rs_obj$accuracy <- map_dbl(rs_obj$results, function(x) mean(x$correct))
+summary(rs_obj$accuracy)
+```
+
+
+```{r}
+hist(rs_obj$accuracy)
+```
+
+
+### Using the bootstrap to make comparisons
+
+```{r}
+
+```
+
+
+```{r}
+ggplot(attrition, aes(Gender, MonthlyIncome)) +
+  geom_boxplot() +
+  scale_y_log10()
+```
+
+
+```{r}
+median_diff <- function(splits) {
+  x <- analysis(splits)
+  median(x$MonthlyIncom[x$Gender == "Female"]) -
+    median(x$MonthlyIncome[x$Gender == "Male"])
+}
+```
+
+
+```{r}
+set.seed(353)
+bt_resamples <- bootstraps(attrition, times = 500)
+```
+
+
+```{r}
+bt_resamples$wage_diff <- map_dbl(bt_resamples$splits, median_diff)
+bt_resamples
+```
+
+
+```{r}
+ggplot(bt_resamples, aes(wage_diff)) +
+  geom_density(adjust = 1.25) +
+  xlab("Difference in Median Montly Income (Female - Male)")
+```
+
+
+```{r}
+glm_coefs <- function(splits, ...) {
+  mod <- glm(..., data = analysis(splits), family = binomial)
+  as.data.frame(t(coef(mod)))
+}
+bt_resamples$betas <- map(bt_resamples$splits, glm_coefs, mod_form)
+bt_resamples
+```
+
+
+### Keeping tidy
+
+```{r}
+first_resample <- bt_resamples$splits[[1]]
+class(first_resample)
+```
+
+
+```{r}
+tidy(first_resample)
+```
+
+
+```{r}
+class(bt_resamples)
+```
+
+
+```{r}
+tidy(bt_resamples)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
