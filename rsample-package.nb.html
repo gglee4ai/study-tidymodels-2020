@@ -1814,21 +1814,6 @@ library(mlbench)
 library(lobstr)
 library(tidymodels)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoi4pSA4pSAIEF0dGFjaGluZyBwYWNrYWdlcyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAgdGlkeW1vZGVscyAwLjEuMSDilIDilIBcbuKckyBicm9vbSAgICAgMC43LjIgICAgICAgICAg4pyTIHB1cnJyICAgICAwLjMuNCAgICAgXG7inJMgZGlhbHMgICAgIDAuMC45ICAgICAgICAgIOKckyByZWNpcGVzICAgMC4xLjE1ICAgIFxu4pyTIGRwbHlyICAgICAxLjAuMiAgICAgICAgICDinJMgdGliYmxlICAgIDMuMC40ICAgICBcbuKckyBnZ3Bsb3QyICAgMy4zLjIuOTAwMCAgICAg4pyTIHRpZHlyICAgICAxLjEuMiAgICAgXG7inJMgaW5mZXIgICAgIDAuNS4zICAgICAgICAgIOKckyB0dW5lICAgICAgMC4xLjIgICAgIFxu4pyTIG1vZGVsZGF0YSAwLjEuMCAgICAgICAgICDinJMgd29ya2Zsb3dzIDAuMi4xICAgICBcbuKckyBwYXJzbmlwICAgMC4xLjQgICAgICAgICAg4pyTIHlhcmRzdGljayAwLjAuNyAgICAgXG7ilIDilIAgQ29uZmxpY3RzIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgCB0aWR5bW9kZWxzX2NvbmZsaWN0cygpIOKUgOKUgFxueCBwdXJycjo6ZGlzY2FyZCgpIG1hc2tzIHNjYWxlczo6ZGlzY2FyZCgpXG54IGRwbHlyOjpmaWx0ZXIoKSAgbWFza3Mgc3RhdHM6OmZpbHRlcigpXG54IGRwbHlyOjpsYWcoKSAgICAgbWFza3Mgc3RhdHM6OmxhZygpXG54IHJlY2lwZXM6OnN0ZXAoKSAgbWFza3Mgc3RhdHM6OnN0ZXAoKVxuIn0= -->
-<pre><code>── Attaching packages ──────────────────────────────────────── tidymodels 0.1.1 ──
-✓ broom     0.7.2          ✓ purrr     0.3.4     
-✓ dials     0.0.9          ✓ recipes   0.1.15    
-✓ dplyr     1.0.2          ✓ tibble    3.0.4     
-✓ ggplot2   3.3.2.9000     ✓ tidyr     1.1.2     
-✓ infer     0.5.3          ✓ tune      0.1.2     
-✓ modeldata 0.1.0          ✓ workflows 0.2.1     
-✓ parsnip   0.1.4          ✓ yardstick 0.0.7     
-── Conflicts ─────────────────────────────────────────── tidymodels_conflicts() ──
-x purrr::discard() masks scales::discard()
-x dplyr::filter()  masks stats::filter()
-x dplyr::lag()     masks stats::lag()
-x recipes::step()  masks stats::step()</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -2466,27 +2451,9 @@ bt_resamples &lt;- bootstraps(attrition, times = 500)</code></pre>
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYnRfcmVzYW1wbGVzJHdhZ2VfZGlmZiA8LSBtYXBfZGJsKGJ0X3Jlc2FtcGxlcyRzcGxpdHMsIG1lZGlhbl9kaWZmKVxuYnRfcmVzYW1wbGVzXG5gYGAifQ== -->
-<pre class="r"><code>bt_resamples$wage_diff &lt;- map_dbl(bt_resamples$splits, median_diff)
-bt_resamples</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYnRfcmVzYW1wbGVzJHdhZ2VfZGlmZiA8LSBtYXBfZGJsKGJ0X3Jlc2FtcGxlcyRzcGxpdHMsIG1lZGlhbl9kaWZmKVxuYGBgIn0= -->
+<pre class="r"><code>bt_resamples$wage_diff &lt;- map_dbl(bt_resamples$splits, median_diff)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiIyBCb290c3RyYXAgc2FtcGxpbmcgXG4jIEEgdGliYmxlOiA1MDAgeCAzXG4gICBzcGxpdHMgICAgICAgICAgICAgaWQgICAgICAgICAgIHdhZ2VfZGlmZlxuICAgPGxpc3Q+ICAgICAgICAgICAgIDxjaHI+ICAgICAgICAgICAgPGRibD5cbiAxIDxzcGxpdCBbMS41Sy81NThdPiBCb290c3RyYXAwMDEgICAgICAxMzYgXG4gMiA8c3BsaXQgWzEuNUsvNTI4XT4gQm9vdHN0cmFwMDAyICAgICAgMjgyLlxuIDMgPHNwbGl0IFsxLjVLLzU0MV0+IEJvb3RzdHJhcDAwMyAgICAgIDQ3MCBcbiA0IDxzcGxpdCBbMS41Sy81NjFdPiBCb290c3RyYXAwMDQgICAgIC0yMTMgXG4gNSA8c3BsaXQgWzEuNUsvNTE4XT4gQm9vdHN0cmFwMDA1ICAgICAgNDUzIFxuIDYgPHNwbGl0IFsxLjVLLzUzOV0+IEJvb3RzdHJhcDAwNiAgICAgIDY4NCBcbiA3IDxzcGxpdCBbMS41Sy81NDJdPiBCb290c3RyYXAwMDcgICAgICAgNjAgXG4gOCA8c3BsaXQgWzEuNUsvNTM2XT4gQm9vdHN0cmFwMDA4ICAgICAgMjg2IFxuIDkgPHNwbGl0IFsxLjVLLzU1Ml0+IEJvb3RzdHJhcDAwOSAgICAgIC0zMCBcbjEwIDxzcGxpdCBbMS41Sy81MTddPiBCb290c3RyYXAwMTAgICAgICA0MTAgXG4jIOKApiB3aXRoIDQ5MCBtb3JlIHJvd3NcbiJ9 -->
-<pre><code># Bootstrap sampling 
-# A tibble: 500 x 3
-   splits             id           wage_diff
-   &lt;list&gt;             &lt;chr&gt;            &lt;dbl&gt;
- 1 &lt;split [1.5K/558]&gt; Bootstrap001      136 
- 2 &lt;split [1.5K/528]&gt; Bootstrap002      282.
- 3 &lt;split [1.5K/541]&gt; Bootstrap003      470 
- 4 &lt;split [1.5K/561]&gt; Bootstrap004     -213 
- 5 &lt;split [1.5K/518]&gt; Bootstrap005      453 
- 6 &lt;split [1.5K/539]&gt; Bootstrap006      684 
- 7 &lt;split [1.5K/542]&gt; Bootstrap007       60 
- 8 &lt;split [1.5K/536]&gt; Bootstrap008      286 
- 9 &lt;split [1.5K/552]&gt; Bootstrap009      -30 
-10 &lt;split [1.5K/517]&gt; Bootstrap010      410 
-# … with 490 more rows</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -2651,7 +2618,7 @@ $(document).ready(function () {
 <!-- code folding -->
 <script>
 $(document).ready(function () {
-  window.initializeSourceEmbed("study-rsample-package.Rmd");
+  window.initializeSourceEmbed("rsample-package.Rmd");
   window.initializeCodeFolding("show" === "show");
 });
 </script>
