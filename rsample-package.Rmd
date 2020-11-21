@@ -14,6 +14,8 @@ library(tidymodels)
 ```
 
 
+# rsample
+
 ## Overview
 
 ```{r}
@@ -87,7 +89,7 @@ dim(assessment(boots$splits[[2]]))
 ```
 
 
-## Basics
+# Basics
 
 ```{r}
 set.seed(8584)
@@ -127,9 +129,9 @@ assessment(first_resample)
 ```
 
 
-## Working with rsets
+# Working with rsets
 
-### Intdocution
+## Intoduction
 
 ```{r}
 data("attrition", package = "modeldata")
@@ -240,7 +242,7 @@ hist(rs_obj$accuracy)
 ```
 
 
-### Using the bootstrap to make comparisons
+## Using the bootstrap to make comparisons
 
 ```{r}
 
@@ -292,7 +294,7 @@ bt_resamples
 ```
 
 
-### Keeping tidy
+## Keeping tidy
 
 ```{r}
 first_resample <- bt_resamples$splits[[1]]
@@ -315,7 +317,7 @@ tidy(bt_resamples)
 ```
 
 
-## Recipes with rsample
+# Recipes with rsample
 
 ```{r}
 library(AmesHousing)
@@ -442,7 +444,7 @@ mean(results$.estimate)
 ```
 
 
-## Survival Analysis Example
+# Survival Analysis Example
 
 ```{r}
 library(survival)
@@ -571,7 +573,7 @@ summary(comparisons, size = 0.05) %>%
 ```
 
 
-## Bootstrap Confidence Intervals
+# Bootstrap Confidence Intervals
 
 ```{r}
 library(tidymodels)
@@ -752,6 +754,62 @@ int_bca(nlin_bt, folds, .fn = fold_incr)
 ```
 
 
+# Monte Carlo Cross-Validation
+
+```{r}
+df <- mc_cv(mtcars, times = 2)
+df
+```
+
+
+```{r}
+as.data.frame(df$splits[[1]])
+```
+
+
+```{r}
+as.data.frame(df$splits[[1]], data = "assessment")
+```
+
+
+```{r}
+mc_cv(cars, prop = .5, times = 2)
+```
+
+
+```{r}
+data(wa_churn)
+wa_churn
+```
+
+
+```{r}
+calc_ratio <- function(split) {
+  dat <- analysis(split)$churn
+  mean(dat == "Yes")
+}
+```
+
+
+```{r}
+set.seed(13)
+resample1 <- mc_cv(wa_churn, prop = 1/2, times = 10)
+summary(map_dbl(resample1$splits, calc_ratio))
+```
+
+
+```{r}
+set.seed(13)
+resample2 <- mc_cv(wa_churn, prop = 1/2, times = 10, strata = "churn")
+summary(map_dbl(resample2$splits, calc_ratio))
+```
+
+
+```{r}
+set.seed(13)
+resample3 <- mc_cv(wa_churn,prop = 1/2, times = 100, strata = "tenure", breaks = 6)
+hist(map_dbl(resample3$splits, calc_ratio))
+```
 
 
 
