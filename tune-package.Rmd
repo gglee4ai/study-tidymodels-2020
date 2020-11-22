@@ -1,0 +1,213 @@
+---
+title: "tune"
+output: html_notebook
+date: 2020-11-21
+---
+
+# Getting started with tune
+
+
+```{r}
+library(tidymodels)
+```
+
+
+```{r}
+data(ames)
+set.seed(4595)
+data_split <- ames %>% 
+  mutate(Sale_Price = log10(Sale_Price)) %>% 
+  initial_split(strata = Sale_Price)
+ames_train <- training(data_split)
+ames_test <- testing(data_split)
+```
+
+
+```{r}
+ames_train %>% 
+  select(Sale_Price, Longitude, Latitude) %>% 
+  pivot_longer(
+    Longitude:Latitude, 
+    names_to = "predictor", values_to = "value"
+  ) %>% 
+  ggplot(aes(value, Sale_Price)) +
+  geom_point(alpha = .2) +
+  geom_smooth(se = FALSE) +
+  facet_wrap(~predictor, scales = "free_x")
+```
+
+
+```{r}
+ames_rec <- 
+  recipe(Sale_Price ~ Gr_Liv_Area + Longitude + Latitude, 
+         data = ames_train) %>% 
+  step_log(Gr_Liv_Area, base = 10) %>% 
+  step_ns(Longitude, deg_free = tune("long df")) %>% 
+  step_ns(Latitude,  deg_free = tune("lat df"))
+```
+
+
+```{r}
+parameters(ames_rec)
+```
+
+
+```{r}
+deg_free()
+```
+
+
+```{r}
+spline_degree()
+```
+
+
+```{r}
+ames_param <- 
+  ames_rec %>% 
+  parameters() %>% 
+  update(
+    `long df` = spline_degree(), 
+    `lat df` = spline_degree()
+  )
+ames_param
+```
+
+
+```{r}
+spline_grid <- grid_max_entropy(ames_param, size = 10)
+spline_grid
+```
+
+
+```{r}
+df_vals <- seq(2, 18, by = 2)
+spline_grid <- expand.grid(`long df` = df_vals, `lat df` = df_vals)
+```
+
+
+```{r}
+lm_mod <- linear_reg() %>% set_engine("lm")
+```
+
+
+```{r}
+set.seed(2453)
+cv_splits <- vfold_cv(ames_train, v = 10, strata = Sale_Price)
+```
+
+
+```{r}
+ames_res <- tune_grid(lm_mod, ames_rec, resamples = cv_splits, 
+                      grid = spline_grid)
+```
+
+
+```{r}
+ames_res
+```
+
+```{r}
+ames_res$.metrics[[1]]
+```
+
+
+```{r}
+estimates <- collect_metrics(ames_res)
+estimates
+```
+
+
+```{r}
+rmse_vals <-
+  estimates %>% 
+  filter(.metric == "rmse") %>% 
+  arrange(mean)
+rmse_vals
+```
+
+
+```{r}
+autoplot(ames_res, metric = "rmse")
+```
+
+
+```{r}
+ames_train %>% 
+  select(Sale_Price, Longitude, Latitude) %>% 
+  pivot_longer(Longitude:Latitude,
+               names_to = "predictor",
+               values_to = "value") %>% 
+  ggplot(aes(value, Sale_Price)) +
+  geom_point(alpha = .2) +
+  geom_smooth(se = FALSE, method = "lm", formula = y ~ splines::ns(x, df = 3), col = "red") +
+  geom_smooth(se = FALSE, method = "lm", formula = y ~ splines::ns(x, df = 16), col = "blue") +
+  scale_y_log10() +
+  facet_wrap(~predictor, scales = "free_x")
+```
+
+
+```{r}
+knn_mod <-
+  nearest_neighbor(neighbors = tune(), weight_func = tune()) %>% 
+  set_engine("kknn") %>% 
+  set_mode("regression")
+```
+
+
+```{r}
+knn_wflow <-
+  workflow() %>% 
+  add_model(knn_mod) %>% 
+  add_recipe(ames_rec)
+```
+
+
+```{r}
+knn_param <-
+  knn_wflow %>% 
+  parameters() %>% 
+  update(
+    `long df` = spline_degree(c(2, 18)),
+    `lat df` = spline_degree(c(2, 18)),
+    neighbors = neighbors(c(3, 50)),
+    weight_func = weight_func(values = c("rectangular", "inv", "gaussian", "triangular"))
+  )
+```
+
+
+```{r}
+#install.packages("kknn")
+library(kknn)
+```
+
+
+```{r}
+ctrl <- control_bayes(verbose = TRUE)
+set.seed(8154)
+knn_search <- tune_bayes(knn_wflow, resamples = cv_splits,
+                         initial = 5, iter = 20,
+                         param_info = knn_param, control = ctrl)
+```
+
+```{r}
+autoplot(knn_search, type = "performance", metric = "rmse")
+```
+
+
+```{r}
+collect_metrics(knn_search) %>% 
+  filter(.metric == "rmse") %>% 
+  arrange(mean)
+```
+
+
+
+
+
+
+
+
+
+
+
