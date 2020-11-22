@@ -1,11 +1,16 @@
 ---
 title: "tune"
 output: html_notebook
-date: 2020-11-21
+date: 2020-11-22
 ---
 
-# Getting started with tune
 
+```{r}
+options(paged.print = FALSE, max.print = 100)
+```
+
+
+# Getting started with tune
 
 ```{r}
 library(tidymodels)
@@ -107,6 +112,7 @@ ames_res <- tune_grid(lm_mod, ames_rec, resamples = cv_splits,
 ames_res
 ```
 
+
 ```{r}
 ames_res$.metrics[[1]]
 ```
@@ -189,6 +195,7 @@ knn_search <- tune_bayes(knn_wflow, resamples = cv_splits,
                          initial = 5, iter = 20,
                          param_info = knn_param, control = ctrl)
 ```
+
 
 ```{r}
 autoplot(knn_search, type = "performance", metric = "rmse")
