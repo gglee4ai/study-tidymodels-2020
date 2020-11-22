@@ -1,15 +1,20 @@
 ---
 title: "Model tuning via grid search"
-date: 2020-06-11
 output: html_notebook
+date: 2020-11-22
 ---
 
-# setup
+
+```{r}
+options(paged.print = FALSE, max.print = 100)
+```
+
 
 ```{r}
 library(tidymodels)
 library(mlbench)
 ```
+
 
 ```{r}
 library(doParallel)
@@ -26,19 +31,33 @@ data(Ionosphere)
 Ionosphere
 ```
 
+
 ```{r}
 Ionosphere %>% count(V1)
 Ionosphere %>% count(V2)
 ```
+
+
+```{r}
+glm(Class ~ ., data = Ionosphere, familty = binomial)
+```
+
+
+```{r}
+glm(Class ~ . - V2, data = Ionosphere, familty = binomial)
+```
+
 
 ```{r}
 Ionosphere %>% 
   summarize_all(mean)
 ```
 
+
 ```{r}
-ionosphere <-Ionosphere %>% select(-V2)
+ionosphere <-Ionosphere %>% select(-V1, -V2)
 ```
+
 
 ```{r}
 svm_mod <- 
@@ -47,21 +66,23 @@ svm_mod <-
   set_engine("kernlab")
 ```
 
+
 ```{r}
 iono_rec <-
   recipe(Class ~ ., data = ionosphere) %>% 
   step_zv(all_predictors()) %>% 
-  step_dummy(V1) %>% 
-  step_range(matches("V1_"))
+  step_lincomb(all_numeric())
 iono_rec
 juice(prep(iono_rec, data = ionosphere))
 ```
+
 
 ```{r}
 set.seed(4943)
 iono_rs <- bootstraps(ionosphere, times = 30)
 iono_rs
 ```
+
 
 ```{r}
 analysis(iono_rs$splits[[1]])
@@ -74,9 +95,11 @@ roc_vals <- metric_set(roc_auc)
 roc_vals
 ```
 
+
 ```{r}
 ctrl <- control_grid(verbose = FALSE)
 ```
+
 
 ```{r}
 set.seed(35)
@@ -91,16 +114,25 @@ formula_res <-
 formula_res
 ```
 
+
+```{r}
+formula_res %>% 
+  select(.metrics) %>% 
+  slice(1) %>% 
+  pull(1)
+```
+
+
 ```{r}
 estimates <- collect_metrics(formula_res)
 estimates
 ```
+
+
 ```{r}
 show_best(formula_res, metric = "roc_auc")
 ```
 
-
-## executing with a recipe
 
 ```{r}
 set.seed(325)
@@ -115,30 +147,10 @@ recipe_res <-
 recipe_res
 ```
 
+
 ```{r}
 show_best(recipe_res, metric = "roc_auc")
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
