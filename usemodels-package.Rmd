@@ -1,0 +1,54 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(usemodels)
+```
+
+
+```{r}
+use_glmnet(mpg ~ ., data = mtcars)
+```
+
+
+```{r}
+library(tidymodels)
+data(ad_data)
+```
+
+
+```{r}
+ad_data$Genotype <- as.character(ad_data$Genotype)
+
+use_xgboost(Class ~ ., data = ad_data, prefix = "impairment")
+```
+
+
+```{r}
+use_ranger(mpg ~ ., data = mtcars)
+```
+
+
+```{r}
+use_earth(mpg ~ ., data = mtcars)
+```
+
+
+```{r}
+earth_grid <- tidyr::crossing(num_terms = 2 * (1:6), prod_degree = 1:2) 
+earth_grid
+```
+
+
+```{r}
+expand_grid(num_terms = 2 * (1:6), prod_degree = 1:2)
+```
+
+
+```{r}
+use_cubist(mpg ~ ., data = mtcars)
+```
+
