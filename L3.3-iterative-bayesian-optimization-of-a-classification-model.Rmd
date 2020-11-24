@@ -1,0 +1,16 @@
+---
+title: "L3.3 Iterative Bayesian optimization of a classification model"
+output: html_notebook
+---
+
+
+```{r}
+options(paged.print = FALSE, max.print = 100)
+```
+
+
+```{r}
+library(tidymodels)
+library(mlbench)
+library(kernlab)
+```
