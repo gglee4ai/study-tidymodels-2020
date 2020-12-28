@@ -1,5 +1,9 @@
-# MY setting
-.DS_Store
+# My ignores
+
+# My temp files
+*.swp
+~$*
+Thumbs.db
 
 # History files
 .Rhistory
